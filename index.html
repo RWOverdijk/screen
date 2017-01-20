@@ -49,24 +49,28 @@
     rmc.connect(prompt('Enter room secret'));
   };
 
-  window.onbeforeunload = function() {
+  window.onbeforeunload                          = function() {
     // Firefox
     document.getElementById('openRoom').disabled = false;
     document.getElementById('joinRoom').disabled = false;
   };
-  rmc.onMediaCaptured   = function() {
+  rmc.onMediaCaptured                            = function() {
     document.getElementById('openRoom').disabled = true;
     document.getElementById('joinRoom').disabled = true;
   };
-  rmc.onstream          = function(event) {
+  rmc.onstream                                   = function(event) {
     rmc.body.appendChild(event.mediaElement);
     if (event.type === 'remote' && !recorders.length) {
-      this.disabled = true;
-      rmc.addStream({
-        screen: true,
-        oneway: true
-      });
+      document.getElementById('shareScreen').disabled = false;
     }
+  };
+  document.getElementById('shareScreen').onclick = function() {
+    this.disabled = true;
+    // http://www.rtcmulticonnection.org/docs/addStream/
+    rmc.addStream({
+      screen: true,
+      oneway: true
+    });
   };
 
   var recorders = [];
