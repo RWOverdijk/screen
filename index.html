@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta charset="utf-8">
+
+    <title>Audio/Video/Screen sharing and recording using RTCMultiConnection</title>
+
+    <meta name="description" content="Audio/Video/Screen sharing and recording using RTCMultiConnection" />
+    <meta name="keywords" content="Audio Recording, Video Recording, Screen Recording, RTCMultiConnection" />
+
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+</head>
+
+<body>
+    <div class="container">
+
+      <div class="row">
+      <div class="col-xs-12"></div>
+          <button id="openRoom" class="btn-xs btn btn-success">Open Room</button>
+          <button id="joinRoom" class="btn-xs btn btn-primary">Join Room</button>
+          <button id="shareScreen" class="btn-xs btn btn-primary" disabled>Share Screen</button>
+      </div>
+
+      <hr>
+      <h2 style="border:0;padding-left:10px;">Recorded Videos</h2><br>
+      <div id="recorded-videos"></div>
+
+      <hr>
+      <h2 style="border:0;padding-left:10px;">Live Videos</h2><br>
+      <div id="videos-container"></div>
+  </div>
+
+    <script src="https://cdn.webrtc-experiment.com/RTCMultiConnection.js"></script>
+    <!-- for p2p streaming -->
+    <script src="/record.js"></script>
+
+    <script>
+        // http://www.rtcmulticonnection.org/docs/constructor/
+        var rmc = new RTCMultiConnection();
+        rmc.body = document.getElementById('videos-container');
+        // http://www.rtcmulticonnection.org/docs/#getExternalIceServers
+        rmc.getExternalIceServers = false;
+        document.getElementById('openRoom').onclick = function() {
+
+            this.disabled = true;
+            // http://www.rtcmulticonnection.org/docs/open/
+            rmc.open(prompt('Enter room secret'));
+        };
+
+        document.getElementById('joinRoom').onclick = function() {
+            this.disabled = true;
+            // http://www.rtcmulticonnection.org/docs/connect/
+            rmc.connect(prompt('Enter room secret'));
+        };
+
+        window.onbeforeunload = function() {
+            // Firefox
+            document.getElementById('openRoom').disabled = false;
+            document.getElementById('joinRoom').disabled = false;
+        };
+        rmc.onMediaCaptured = function() {
+            document.getElementById('openRoom').disabled = true;
+            document.getElementById('joinRoom').disabled = true;
+        };
+        rmc.onstream = function(event) {
+            rmc.body.appendChild(event.mediaElement);
+            if(event.type === 'remote' && !recorders.length) {
+                document.getElementById('shareScreen').disabled = false;
+            }
+        };
+        document.getElementById('shareScreen').onclick = function() {
+            this.disabled = true;
+            // http://www.rtcmulticonnection.org/docs/addStream/
+            rmc.addStream({
+                screen: true,
+                oneway: true
+            });
+        };
+
+        var recorders = [];
+    </script>
+
+</body>
+
+</html>
